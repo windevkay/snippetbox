@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/justinas/nosurf"
 )
 
 // Set OWASP Security Headers on responses
@@ -54,4 +56,15 @@ func (app *application) requireAuthentication(next http.Handler) http.Handler {
 		// And call the next handler in the chain.
 		next.ServeHTTP(w, r) 
 	})
+}
+
+func noSurf(next http.Handler) http.Handler {
+	csrfHandler := nosurf.New(next) 
+	csrfHandler.SetBaseCookie(http.Cookie{
+		HttpOnly: true, 
+		Path: "/", 
+		Secure: true,
+	})
+	
+	return csrfHandler 
 }
