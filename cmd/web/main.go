@@ -19,13 +19,13 @@ import (
 )
 
 type application struct {
-	errorLog		*log.Logger
-	infoLog			*log.Logger
-	snippets		*models.SnippetModel
-	users			*models.UserModel
-	templateCache 	map[string]*template.Template	
-	formDecoder 	*form.Decoder
-	sessionManager	*scs.SessionManager
+	errorLog       *log.Logger
+	infoLog        *log.Logger
+	snippets       models.SnippetModelInterface
+	users          models.UserModelInterface
+	templateCache  map[string]*template.Template
+	formDecoder    *form.Decoder
+	sessionManager *scs.SessionManager
 }
 
 func main() {
@@ -54,19 +54,19 @@ func main() {
 	formDecoder := form.NewDecoder()
 
 	// session
-	sessionManager := scs.New() 
-	sessionManager.Store = mysqlstore.New(db) 
+	sessionManager := scs.New()
+	sessionManager.Store = mysqlstore.New(db)
 	sessionManager.Lifetime = 12 * time.Hour
 	sessionManager.Cookie.Secure = true
 
 	// app instance
 	app := &application{
-		errorLog:		errorLog,
-		infoLog:		infoLog,
-		snippets:		&models.SnippetModel{DB: db},
-		users:			&models.UserModel{DB: db},
-		templateCache:	templateCache,
-		formDecoder:	formDecoder,
+		errorLog:       errorLog,
+		infoLog:        infoLog,
+		snippets:       &models.SnippetModel{DB: db},
+		users:          &models.UserModel{DB: db},
+		templateCache:  templateCache,
+		formDecoder:    formDecoder,
 		sessionManager: sessionManager,
 	}
 
@@ -77,13 +77,13 @@ func main() {
 
 	// override http defaults e.g. ErrorLog
 	srv := &http.Server{
-		Addr:			*addr,
-		ErrorLog:		errorLog,
-		Handler:		app.routes(),
-		TLSConfig:		tlsConfig,
-		IdleTimeout:	time.Minute, // after inactivity
-		ReadTimeout:	5 * time.Second, // max time to read request header/body
-		WriteTimeout:	10 * time.Second,
+		Addr:         *addr,
+		ErrorLog:     errorLog,
+		Handler:      app.routes(),
+		TLSConfig:    tlsConfig,
+		IdleTimeout:  time.Minute,     // after inactivity
+		ReadTimeout:  5 * time.Second, // max time to read request header/body
+		WriteTimeout: 10 * time.Second,
 	}
 
 	infoLog.Printf("Starting server on %s", *addr)
@@ -91,7 +91,7 @@ func main() {
 	errorLog.Fatal(err)
 }
 
-func openDB (dsn string) (*sql.DB, error) {
+func openDB(dsn string) (*sql.DB, error) {
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		return nil, err

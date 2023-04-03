@@ -11,21 +11,22 @@ import (
 )
 
 type templateData struct {
-	CurrentYear 	int
-	Snippet 		*models.Snippet
-	Snippets 		[]*models.Snippet
-	Form 			any
-	Flash 			string
-	IsAuthenticated	bool
-	CSRFToken		string
+	CurrentYear     int
+	Snippet         *models.Snippet
+	Snippets        []*models.Snippet
+	Form            any
+	Flash           string
+	IsAuthenticated bool
+	CSRFToken       string
 }
 
 func humanDate(t time.Time) string {
 	if t.IsZero() {
 		return ""
 	}
-	return t.UTC().Format("02 Jan 2006 at 15:04") 
+	return t.UTC().Format("02 Jan 2006 at 15:04")
 }
+
 // template functions
 var functions = template.FuncMap{
 	"humanDate": humanDate,
@@ -34,26 +35,26 @@ var functions = template.FuncMap{
 // create and return a cache (map) - key[name]: value[template set]
 func newTemplateCache() (map[string]*template.Template, error) {
 	cache := map[string]*template.Template{}
-	
+
 	pages, err := fs.Glob(ui.Files, "html/pages/*.html")
 	if err != nil {
-		return nil, err 
+		return nil, err
 	}
-	
+
 	for _, page := range pages {
 		name := filepath.Base(page)
 		patterns := []string{
-			"html/base.html", 
-			"html/partials/*.html", 
+			"html/base.html",
+			"html/partials/*.html",
 			page,
 		}
-			
-		ts, err := template.New(name).Funcs(functions).ParseFS(ui.Files, patterns...) 
+
+		ts, err := template.New(name).Funcs(functions).ParseFS(ui.Files, patterns...)
 		if err != nil {
-			return nil, err 
+			return nil, err
 		}
 
 		cache[name] = ts
 	}
-	return cache, nil 
+	return cache, nil
 }
